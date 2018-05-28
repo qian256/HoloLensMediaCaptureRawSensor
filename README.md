@@ -1,9 +1,9 @@
 HoloLensMediaCaptureRawSensor
 ===
 
-Long Qian
+Author: Long Qian
 
-lqian8@jhu.edu
+Date: 2018-05-28
 
 ## Screenshot
 
