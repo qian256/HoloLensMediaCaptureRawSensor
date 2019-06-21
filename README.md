@@ -3,7 +3,7 @@ HoloLensMediaCaptureRawSensor
 
 Author: Long Qian
 
-Date: 2018-05-28
+Date: 2019-06-21
 
 ## Screenshot
 
@@ -31,8 +31,7 @@ Date: 2018-05-28
 ```
 4. Deploy to HoloLens. Use **clicker** or **air tap** to Start/Stop the raw sensors
 
-Note: You **MUST** stop the raw sensors before quitting the application. Otherwise the raw sensors will not be able to properly run for HoloLens SLAM. You will need to **RESTART** HoloLens if that happens.
-
 ## Note
 
-You need to enable research mode in HoloLens first, and this project is tested with Unity 2017.4.4f1 and Visual Studio 2017.
+- You **MUST** stop the raw sensors before quitting the application. Otherwise the raw sensors will not be able to properly run for HoloLens SLAM. You will need to **RESTART** HoloLens if that happens.
+- You need to enable research mode in HoloLens first, and this project is tested with Unity 2018.3.1f1 and Visual Studio 2017.
