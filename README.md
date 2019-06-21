@@ -29,7 +29,9 @@ Date: 2018-05-28
 	......
 </Capabilities>
 ```
-4. Deploy to HoloLens. Use clicker or air tap to Start/Stop the raw sensors
+4. Deploy to HoloLens. Use **clicker** or **air tap** to Start/Stop the raw sensors
+
+Note: You **MUST** stop the raw sensors before quitting the application. Otherwise the raw sensors will not be able to properly run for HoloLens SLAM. You will need to **RESTART** HoloLens if that happens.
 
 ## Note
 

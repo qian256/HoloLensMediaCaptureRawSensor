@@ -54,7 +54,7 @@ public class MediaCaptureRawSensor : MonoBehaviour {
     /// <returns></returns>
     private async Task<bool> InitializeMediaCaptureAsync() {
         if (captureStatus != CaptureStatus.Clean) {
-            Debug.Log(TAG + ": InitializeMediaCaptureAsync() fails because of incorrect status");
+            Debug.Log(TAG + " " + id + ": InitializeMediaCaptureAsync() fails because of incorrect status");
             return false;
         }
 
@@ -68,7 +68,7 @@ public class MediaCaptureRawSensor : MonoBehaviour {
         }
         
         if (allGroups.Count <= 0) {
-            Debug.Log(TAG + ": InitializeMediaCaptureAsync() fails because there is no MediaFrameSourceGroup");
+            Debug.Log(TAG + " " + id + ": InitializeMediaCaptureAsync() fails because there is no MediaFrameSourceGroup");
             return false;
         }
         
@@ -86,19 +86,20 @@ public class MediaCaptureRawSensor : MonoBehaviour {
         };
 
         await mediaCapture.InitializeAsync(settings);
-        Debug.Log(TAG + ": MediaCapture is successfully initialized in shared mode.");
+        Debug.Log(TAG + " " + id + ": MediaCapture is successfully initialized in shared mode.");
 
         // logging all frame source information
-        //string logString = "";
-        //foreach (var frameSource in mediaCapture.FrameSources) {
-        //    var info = frameSource.Value.Info;
-        //    logString += info.Id + ", " + info.MediaStreamType + ", " + info.SourceKind + "\n";
-        //    foreach(var format in frameSource.Value.SupportedFormats) {
-        //        logString += format.VideoFormat.Width + " x " + format.VideoFormat.Height + ", Major type: " + format.MajorType + ", Subtype: " + format.Subtype +
-        //                ", Framerate: " + format.FrameRate.Numerator + "/" + format.FrameRate.Denominator + "\n";
-        //    }
-        //}
-        //Debug.Log(logString);
+        string logString = "";
+        foreach (var frameSource in mediaCapture.FrameSources) {
+            var info = frameSource.Value.Info;
+            logString += info.Id + ", " + info.MediaStreamType + ", " + info.SourceKind + "\n";
+            logString += "Total number of SupportedFormats is " + frameSource.Value.SupportedFormats.Count + "\n";
+            foreach (var format in frameSource.Value.SupportedFormats) {
+                logString += format.VideoFormat.Width + " x " + format.VideoFormat.Height + ", Major type: " + format.MajorType + ", Subtype: " + format.Subtype +
+                        ", Framerate: " + format.FrameRate.Numerator + "/" + format.FrameRate.Denominator + "\n";
+            }
+        }
+        Debug.Log(logString);
         MediaFrameSource targetFrameSource = mediaCapture.FrameSources.Values.ElementAt(id);
         MediaFrameFormat targetResFormat = targetFrameSource.SupportedFormats[0];
         try {
@@ -111,13 +112,13 @@ public class MediaCaptureRawSensor : MonoBehaviour {
             frameReader.FrameArrived += OnFrameArrived;
             videoWidth = Convert.ToInt32(targetResFormat.VideoFormat.Width);
             videoHeight = Convert.ToInt32(targetResFormat.VideoFormat.Height);
-            Debug.Log(TAG + ": FrameReader is successfully initialized, " + videoWidth + "x" + videoHeight + 
+            Debug.Log(TAG + " " + id + ": FrameReader is successfully initialized, " + videoWidth + "x" + videoHeight + 
                 ", Framerate: " + targetResFormat.FrameRate.Numerator + "/" + targetResFormat.FrameRate.Denominator + 
                 ", Major type: " + targetResFormat.MajorType + ", Subtype: " + targetResFormat.Subtype);
         }
         catch (Exception e) {
-            Debug.Log(TAG + ": FrameReader is not initialized");
-            Debug.Log(TAG + ": Exception: " + e);
+            Debug.Log(TAG + " " + id + ": FrameReader is not initialized");
+            Debug.Log(TAG + " " + id + ": Exception: " + e);
             return false;
         }
         
@@ -126,7 +127,7 @@ public class MediaCaptureRawSensor : MonoBehaviour {
     }
     
     private async Task<bool> StartFrameReaderAsync() {
-        Debug.Log(TAG + " StartFrameReaderAsync() thread ID is " + Thread.CurrentThread.ManagedThreadId);
+        Debug.Log(TAG + " " + id + " StartFrameReaderAsync() thread ID is " + Thread.CurrentThread.ManagedThreadId);
         if (captureStatus != CaptureStatus.Initialized) {
             Debug.Log(TAG + ": StartFrameReaderAsync() fails because of incorrect status");
             return false;
@@ -134,24 +135,24 @@ public class MediaCaptureRawSensor : MonoBehaviour {
         
         MediaFrameReaderStartStatus status = await frameReader.StartAsync();
         if (status == MediaFrameReaderStartStatus.Success) {
-            Debug.Log(TAG + ": StartFrameReaderAsync() is successful");
+            Debug.Log(TAG + " " + id + ": StartFrameReaderAsync() is successful");
             captureStatus = CaptureStatus.Running;
             return true;
         }
         else {
-            Debug.Log(TAG + ": StartFrameReaderAsync() is successful, status = " + status);
+            Debug.Log(TAG + " " + id + ": StartFrameReaderAsync() is successful, status = " + status);
             return false;
         }
     }
 
     private async Task<bool> StopFrameReaderAsync() {
         if (captureStatus != CaptureStatus.Running) {
-            Debug.Log(TAG + ": StopFrameReaderAsync() fails because of incorrect status");
+            Debug.Log(TAG + " " + id + ": StopFrameReaderAsync() fails because of incorrect status");
             return false;
         }
         await frameReader.StopAsync();
         captureStatus = CaptureStatus.Initialized;
-        Debug.Log(TAG + ": StopFrameReaderAsync() is successful");
+        Debug.Log(TAG + " " + id + ": StopFrameReaderAsync() is successful");
         return true;
     }
 
@@ -163,7 +164,7 @@ public class MediaCaptureRawSensor : MonoBehaviour {
         // "Started" state. The latter can occur if a FrameArrived event was in flight
         // when the reader was stopped.
         if (onFrameArrivedProcessing) {
-            Debug.Log(TAG + " OnFrameArrived() is still processing");
+            Debug.Log(TAG + " " + id + " OnFrameArrived() is still processing");
             return;
         }
         onFrameArrivedProcessing = true;
@@ -233,12 +234,13 @@ public class MediaCaptureRawSensor : MonoBehaviour {
 
     void OnApplicationQuit() {
         if (captureStatus == CaptureStatus.Running) {
-            StopFrameReaderAsyncWrapper();
+            var stopTask = StopFrameReaderAsync();
+            stopTask.Wait();
         }
     }
 
     public void OnClick() {
-        Debug.Log(TAG + " OnClick()");
+        Debug.Log(TAG + " " + id + " OnClick()");
         if (captureStatus == CaptureStatus.Initialized) {
             StartFrameReaderAsyncWrapper();
         }
